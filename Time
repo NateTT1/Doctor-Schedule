@@ -1,0 +1,115 @@
+package option1.stage1;
+
+public class Time {
+	private int hour, minute;
+
+	public Time(int hour, int minute) {
+		setHour(hour);
+		setMinute(minute);
+	}
+
+	public Time(Time t) {
+		setHour(t.hour);
+		setMinute(t.minute);
+	}
+	
+	public Time() {
+		setHour(0);
+		setMinute(0);
+	}
+
+	public int getHour() {
+		return hour;
+	}
+
+	public void setHour(int hour) {
+		hour = hour%24;
+		this.hour = hour;
+	}
+
+	public int getMinute() {
+		return minute;
+	}
+
+	/**
+	 * 
+	 * @param minute
+	 */
+	public void setMinute(int minute) {
+		if(minute >= 45)
+			this.minute = 45;
+		else if(minute >= 30)
+			this.minute = 30;
+		else if(minute >= 15)
+			this.minute = 15;
+		else 
+			this.minute = 0;
+	}
+
+	public String toString() {
+		if(hour < 10 && minute < 10)
+			return "0"+hour+":0"+minute;
+		if(hour < 10)
+			return "0"+hour+":"+minute;
+		if(minute < 10)
+			return hour+":0"+minute;
+		return hour+":"+minute;
+	}
+
+	public boolean equals(Object other) {
+		if(other instanceof Time)
+			return hour == ((Time)other).hour && minute == ((Time)other).minute;
+		else
+			return false;
+	}
+	
+	/**
+	 * 
+	 * @param other
+	 * @return the difference in minutes between calling object and other object.
+	 * note that the value returned will be positive if calling object comes after 
+	 * parameter object and negative if calling object comes before parameter object.
+	 * for example, 
+	 * if calling object represents 14:00 and parameter represents 12:30, return 90.
+	 * if calling object represents 13:00 and parameter represents 17:30, return -270.
+	 */
+	public int diff(Time other) {
+		int h = hour - other.hour;
+		int m = minute - other.minute;
+		return h*60 + m;
+	}
+
+	/**
+	 * @param other: object against which calling object should be compared
+	 * @return 	 1 if calling object is after parameter object
+	 * 			-1 if calling object is before parameter object
+	 * 			 0 if calling object and parameter object are at the same time
+	 */
+	public int compareTo(Time other) {
+		int d = diff(other);
+		return d > 0 ? 1: d < 0? -1: 0;
+	}
+
+	/**
+	 * 
+	 * @param quarterHourCount (assumed to be non-negative).
+	 * @return a Time object that represents the calling object shifted forward by
+	 * quarterHourCount increments of 15 minutes.
+	 * for example,
+	 * if calling object represents 14:30 and quarterHourCount = 5, 
+	 * return Time object representing 15:45.
+	 */
+	public Time advance(int quarterHourCount) {
+		int t = (hour*60 + minute + quarterHourCount*15)%(24*60);
+		int hh = t/60;
+		int mm = t%60;
+		Time result = new Time(hh, mm);
+
+		if(result.compareTo(this) < 0) { //overflowing to next day
+			return null;
+		}
+		else {
+			return result;
+		}
+	}
+}
