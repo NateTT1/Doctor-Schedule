@@ -1,0 +1,70 @@
+package option1.stage1;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class Doctor {
+	private String name;
+	private String speciality;
+
+	/*
+	 * note specialities is static means that only one instance is created
+	 * irrespective of number of Doctor instances and that one instance of
+	 * specialities is shared by all instances. it can be accessed by Doctor.specialities
+	 */
+	public static ArrayList<String> specialities = new ArrayList<String>(Arrays.asList("General Practitioner", "Dentist", "Surgeon", 
+			"Pediatrician", "Podiatrician", "Dermatologist", 
+			"Radiologist", "Pathologist", "Physician", 
+			"Obstetrician", "Gynaecologist", "Oncologist"));
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getSpeciality() {
+		return speciality;
+	}
+
+	/**
+	 * set speciality of the calling object to the passed value IF the value 
+	 * exists in the ArrayList specialities. 
+	 * If the passed value doesn't exist in the ArrayList specialities, set
+	 * the speciality of the calling object to "General Practitioner"
+	 * @param speciality
+	 */
+	public void setSpeciality(String speciality) {
+		for(String spec: specialities) {
+			if(speciality.equalsIgnoreCase(spec)) {
+				this.speciality = spec;
+				return;
+			}
+		}
+		this.speciality = specialities.get(0);
+	}
+
+	public Doctor(String name, String speciality) {
+		setName(name);
+		setSpeciality(speciality);
+	}
+
+	public String toString() {
+		return "Dr. "+name+" ("+speciality+")";
+	}
+
+	/**
+	 * 
+	 * @param other
+	 * @return true if the names and specialities of the calling object and the parameter object
+	 * are the same (case insensitive)
+	 */
+	public boolean equals(Object other) {
+		if(other instanceof Doctor)
+			return name.equalsIgnoreCase(((Doctor)other).name) && speciality.equalsIgnoreCase(((Doctor)other).speciality);
+		else
+			return false;
+	}
+}
