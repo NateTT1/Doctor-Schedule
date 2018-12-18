@@ -1,0 +1,232 @@
+package option1.stage4;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Scanner;
+import option1.stage1.*;
+import option1.stage2.*;
+import option1.stage3.*;
+
+public class AppointmentDiary {
+	private String practiceName;
+	private ArrayList<Appointment> appointments;
+	private ArrayList<Doctor> doctors;
+
+	/**
+	 * DO NOT MODIFY
+	 * initialize an empty appointment diary
+	 */
+	public AppointmentDiary() {
+		practiceName = "TBA";
+		appointments = new ArrayList<Appointment>();
+		doctors = new ArrayList<Doctor>();
+	}
+
+	/**
+	 * DO NOT MODIFY
+	 * Read appointment diary from the data files
+	 * @param name
+	 * @param filenameDocs
+	 * @param filenameAppointments
+	 * @throws Exception
+	 */
+	public AppointmentDiary(String name, String filenameDocs, String filenameAppointments) throws Exception {
+		practiceName = name;
+		appointments = new ArrayList<Appointment>();
+		doctors = new ArrayList<Doctor>();
+		Scanner scanner = new Scanner(new FileReader(filenameDocs));
+		for(int i=0; i < 4; i++) { //ignore first 4 lines
+			scanner.nextLine();
+		}
+		String line;
+		while(true) {
+			try {
+				line = scanner.nextLine();
+			}
+			catch(Exception e) {
+				break;
+			}
+			line = line.trim();
+			String[] tokens = line.split(", ");
+			doctors.add(new Doctor(tokens[0].trim(), tokens[1].trim()));
+		}
+		scanner.close();
+		scanner = new Scanner(new FileReader(filenameAppointments));
+		while(true) {
+			try {
+				line = scanner.nextLine();
+			}
+			catch(Exception e) {
+				break;
+			}
+			line = line.trim();
+			String[] tokens = line.split(", +");
+			Patient patient = new Patient(tokens[0].trim());
+			String specialityRequested = tokens[1].trim();
+			String[] start = tokens[2].split(":");
+			String[] end = tokens[3].split(":");
+			//System.out.println(patient+" "+Arrays.toString(start)+" "+Arrays.toString(end));
+			Time startTime = new Time(Integer.parseInt(start[0]), Integer.parseInt(start[1]));
+			Time endTime = new Time(Integer.parseInt(end[0]), Integer.parseInt(end[1]));
+			//System.out.println(patient+" "+startTime+" "+endTime);
+			TimeSlot slotRequested = new TimeSlot(startTime, endTime);
+			for(Doctor doc: doctors) {
+				if(doc.getSpeciality().equalsIgnoreCase(specialityRequested)) {
+					boolean free = true;
+					for(Appointment app: appointments) {
+						if(app.getDoctor().equals(doc) && app.getTimeSlot().overlapsWith(slotRequested)) {
+							free = false;
+						}
+					}
+					Appointment appointmentRequested = new Appointment(doc, patient, slotRequested);
+					if(free) {
+						appointments.add(appointmentRequested);
+						//System.out.println(appointmentRequested+"\nDONE!\n");
+						break;
+					}
+					else {
+						//System.out.println(appointmentRequested+"\nFAILED. Slot requested, "+slotRequested+", conflicts with existing appointment for "+conflictingSlot+".\n");
+					}
+				}
+			}//end doctor traversal
+		}
+		scanner.close();
+	}
+
+	/**
+	 * DO NOT MODIFY
+	 */
+	public String toString() {
+		String result = practiceName+"\n\nDoctors:\n\n";
+		for(Doctor doc: doctors) {
+			result = result + doc + "\n";
+		}
+		result = result + "\n\nAppointments:\n\n";
+		for(Appointment app: appointments) {
+			result = result + app + "\n";
+		}
+		return result;
+	}
+
+	/**
+	 * DO NOT MODIFY
+	 * @return a list of appointments, each on a new line
+	 */
+	public String getAppointments() {
+		String result = "";
+		for(Appointment appointment: appointments) {
+			result = result + appointment + "\n";
+		}
+		return result;
+	}
+
+	/**
+	 * @param speciality
+	 * @return a list of doctors with passed speciality
+	 */
+	public ArrayList<Doctor> getDoctors(String speciality) {
+		ArrayList<Doctor> result = new ArrayList<Doctor>();
+		for(Doctor doc: doctors) {
+			if(doc.getSpeciality().equalsIgnoreCase(speciality)) {
+				result.add(doc);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 
+	 * @return a list of specialists medical centre doesn't have right now.
+	 * note that you can access the class variable (ArrayList) specialities 
+	 * using Doctor.specialities
+	 */
+	public ArrayList<String> getMissingSpecialists() {
+		ArrayList<String> missingSpecialists = new ArrayList<String>();
+		missingSpecialists.addAll(Doctor.specialities);
+		for(Doctor doc: doctors) {
+			if(missingSpecialists.contains(doc.getSpeciality()) == true) {
+				missingSpecialists.remove(doc.getSpeciality());
+			}
+		}
+		return missingSpecialists;
+	}
+
+
+	/**
+	 * 
+	 * @param appointment: appointment to be added.
+	 * note that the appointment booking can fail only if 
+	 * appointment with **all** specialists for requested speciality already
+	 * exist during the time slot requested.
+	 * @return true if the appointment was added successfully, false otherwise.
+	 */
+	public boolean add(Appointment appointment) {
+		for(Appointment current: appointments) {
+			if(current.conflictsWith(appointment)) {
+				return false;
+			}
+		}
+		appointments.add(appointment);
+		if(doctors.contains(appointment.getDoctor()))
+			doctors.add(appointment.getDoctor());
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param doc
+	 * remove the doctor and all his/her appointments
+	 */
+	public void remove(Doctor doc) {
+        for(int i = 0; i<appointments.size(); i++) {
+            if((appointments.get(i).getDoctor()).equals(doc)){
+                appointments.remove(i);
+                i--;
+            }
+        }
+        doctors.remove(doc);
+        
+	}
+
+
+	/**
+	 * sort the list of appointments in ascending order of start time
+	 */
+	public void sort() {
+		for(int i=1; i < appointments.size(); i++) {
+			Appointment backup = appointments.get(i);
+			int k = i-1;
+			while(k>=0 && appointments.get(k).getTimeSlot().getStartTime().compareTo(backup.getTimeSlot().getStartTime()) == 1) {
+				appointments.set(k+1, appointments.get(k));
+				k--;
+			}
+			appointments.set(k+1, backup);
+		}
+	}
+
+
+	/**
+	 * 
+	 * @param other
+	 * @return an AppointDiary object with appointments with a conflict between
+	 * the calling object and the parameter object
+	 * NOTE:
+	 * if appointment X conflicts with appointment Y, add both X and Y to the list.
+	 */
+	public ArrayList<Appointment> getConflictingAppointments(AppointmentDiary other) {
+		ArrayList<Appointment> conflicts = new ArrayList<Appointment>();
+		for(Appointment a: appointments) {
+			for(Appointment b: other.appointments) {
+				if(a.conflictsWith(b)) {
+					if(!conflicts.contains(a))
+						conflicts.add(a);
+					if(!conflicts.contains(b))
+						conflicts.add(b);
+				}
+			}
+		}
+		return conflicts;
+	}
+}
