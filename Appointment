@@ -1,0 +1,71 @@
+package option1.stage3;
+
+import option1.stage1.*;
+import option1.stage2.*;
+
+public class Appointment {
+	private Doctor doctor;
+	private Patient patient;
+	private TimeSlot timeSlot;
+	
+	public Doctor getDoctor() {
+		return doctor;
+	}
+	
+	public void setDoctor(Doctor doctor) {
+		this.doctor = doctor;
+	}
+	
+	public Patient getPatient() {
+		return patient;
+	}
+	
+	public void setPatient(Patient patient) {
+		this.patient = patient;
+	}
+	
+	public TimeSlot getTimeSlot() {
+		return timeSlot;
+	}
+	
+	public void setTimeSlot(TimeSlot timeSlot) {
+		this.timeSlot = timeSlot;
+	}
+	
+	public Appointment(Doctor doctor, Patient patient, TimeSlot timeSlot) {
+		setDoctor(doctor);
+		setPatient(patient);
+		setTimeSlot(timeSlot);
+	}
+	
+	public Appointment(Patient patient, TimeSlot timeSlot) {
+		setDoctor(null);
+		setPatient(patient);
+		setTimeSlot(timeSlot);
+	}
+	
+	public String toString() {
+		if(doctor != null) 
+			return patient+" with "+doctor+" for "+timeSlot;
+		else
+			return patient+" for "+timeSlot;
+			
+	}
+
+	/**
+	 * 
+	 * @param other
+	 * @return true if calling object conflicts with parameter Appointment.
+	 * we say two appointments conflict if they are with the same doctor
+	 * and the timeSlots overlap.
+	 * HINT: Use method equals from Doctor class and method overlapsWith from TimeSlot class
+	 */
+	public boolean conflictsWith(Appointment other) {
+		if(doctor.equals(other.doctor)) {
+			if(timeSlot.overlapsWith(other.timeSlot)) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
