@@ -1,0 +1,74 @@
+package option1.stage2;
+import option1.stage1.Time;
+
+public class TimeSlot {
+	private Time startTime;
+	private Time endTime; 
+
+	public Time getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(Time startTime) {
+		this.startTime = startTime;
+	}
+
+	public Time getEndTime() {
+		return endTime;
+	}
+
+	/**
+	 * TimeSlots can be of 15 minutes, 30 minutes, 45 minutes and 1 hour duration.
+	 * You may assume startTime is already set and is in multiples of 15 minutes.
+	 * if endTime is more than 60 minutes away from startTime, set endTime to 60 minutes
+	 * after startTime
+	 * if endTime is less than 15 minutes away from startTime (or for that matter, before startTime),
+	 * set endTime to 15 minutes after startTime
+	 * in all other cases, set endTime to passed time.
+	 * @param endTime
+	 */
+	public void setEndTime(Time endTime) {
+		int d = endTime.diff(startTime)/15;
+		if(d >= 1 && d <= 4) 
+			this.endTime = endTime;
+		else if(d < 1)
+			this.endTime = new Time(startTime.advance(1));
+		else //d > 4
+			this.endTime = new Time(startTime.advance(4));
+
+	}
+
+	public TimeSlot(Time startTime, Time endTime) {
+		setStartTime(startTime);
+		setEndTime(endTime);
+	}
+
+	public TimeSlot(Time time) {
+		this.startTime = time;
+		this.endTime = time;
+	}
+
+	public String toString() {
+		return startTime+" - "+endTime;
+	}
+
+	/**
+	 * 
+	 * @param other
+	 * @return true if there is any overlap between calling object and parameter object, false otherwise
+	 * For example,
+	 * there is an overlap between slot (12:00-12:30) and slot (12:15-13:00)
+	 * there is an overlap between slot (12:00-12:30) and slot (11:15-12:45)
+	 * there is an overlap between slot (12:00-12:30) and slot (11:15-12:15)
+	 * there is an no overlap between slot (12:00-12:30) and slot (12:30-13:00)
+	 * 
+	 */
+	public boolean overlapsWith(TimeSlot other) {
+
+		if(startTime.compareTo(other.startTime) <= 0 && endTime.compareTo(other.startTime) <= 0)
+			return false;
+		if(startTime.compareTo(other.endTime) >= 0 && endTime.compareTo(other.endTime) >= 0)
+			return false;
+		return true;
+	}
+}
